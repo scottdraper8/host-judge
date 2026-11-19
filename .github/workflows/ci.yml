@@ -25,15 +25,31 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install pre-commit
+      - name: Install actionlint
+        env:
+          ACTIONLINT_VERSION: 1.7.12
+          ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
         run: |
-          python3 -m venv "$RUNNER_TEMP/pre-commit"
-          "$RUNNER_TEMP/pre-commit/bin/pip" install --disable-pip-version-check pre-commit==4.6.2
+          archive="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          path="$RUNNER_TEMP/$archive"
+          curl --fail --location --proto '=https' --tlsv1.2 --retry 3 \
+            --output "$path" \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/$archive"
+          printf '%s  %s\n' "$ACTIONLINT_SHA256" "$path" | sha256sum --check
+          tar -xzf "$path" -C "$RUNNER_TEMP" actionlint
 
-      - name: Validate repository
-        run: >-
-          "$RUNNER_TEMP/pre-commit/bin/pre-commit" run --all-files
-          --show-diff-on-failure
+      - name: Validate workflow definitions
+        run: |
+          "$RUNNER_TEMP/actionlint" -color
+
+      - name: Validate dependency policy
+        run: .github/scripts/check_dependency_policy.py
+
+      - name: Check Rust formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run Clippy
+        run: cargo clippy --all-targets --all-features --locked -- -D warnings
 
       - name: Build optimized analyzer
         run: cargo build --release --locked

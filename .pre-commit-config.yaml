@@ -25,11 +25,6 @@ repos:
         files: \.py$
       - id: detect-private-key
 
-  - repo: https://github.com/rhysd/actionlint
-    rev: 914e7df21a07ef503a81201c76d2b11c789d3fca # v1.7.12
-    hooks:
-      - id: actionlint
-
   - repo: https://github.com/bnjbvr/cargo-machete
     rev: ac30a525c0a8d163a92d727b3ff079ee3f6ecb08 # v0.9.2
     hooks:
@@ -44,28 +39,6 @@ repos:
 
   - repo: local
     hooks:
-      - id: dependency-policy
-        name: validate dependency and toolchain policy
-        entry: .github/scripts/check_dependency_policy.py
-        language: python
-        pass_filenames: false
-        always_run: true
-
-      - id: rustfmt
-        name: rustfmt
-        entry: cargo fmt --all -- --check
-        language: system
-        pass_filenames: false
-        files: \.rs$
-
-      - id: clippy
-        name: clippy
-        entry: cargo clippy --all-targets --all-features --locked -- -D warnings
-        language: system
-        pass_filenames: false
-        files: (^|/)Cargo\.(toml|lock)$|^rust-toolchain\.toml$|^src/.*\.rs$
-        stages: [pre-commit, pre-push]
-
       - id: contribution-branch
         name: validate branch metadata
         entry: .github/scripts/check_contribution_attribution.py branches
