@@ -164,7 +164,7 @@ jobs:
         run: |
           for workflow in ci.yml security.yml codeql.yml contribution-policy.yml; do
             found=false
-            for attempt in $(seq 1 15); do
+            for _ in $(seq 1 15); do
               run_data=$(gh api \
                 "repos/$REPOSITORY/actions/workflows/$workflow/runs?branch=automation%2Fhost-list-analysis&event=pull_request&per_page=20" \
                 --jq ".workflow_runs[] | select(.head_sha == \"$HEAD_SHA\") | [.id, .status, (.conclusion // \"\")] | @tsv" \
