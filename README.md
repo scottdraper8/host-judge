@@ -39,8 +39,8 @@ publish a combined host list.
 <div align="center">
 
 ![General Domains](https://img.shields.io/badge/General_Domains-5,434,166-8be9fd?style=for-the-badge&labelColor=6272a4)
-![Total Domains](https://img.shields.io/badge/Total_Domains_(with_NSFW)-10,369,238-ff79c6?style=for-the-badge&labelColor=6272a4)
-![Last Updated](https://img.shields.io/badge/Last_Updated-2026--11--19_23:21:52_UTC-50fa7b?style=for-the-badge&labelColor=6272a4)
+![Total Domains](https://img.shields.io/badge/Total_Domains_(with_NSFW)-10,369,408-ff79c6?style=for-the-badge&labelColor=6272a4)
+![Last Updated](https://img.shields.io/badge/Last_Updated-2026--11--19_23:43:04_UTC-50fa7b?style=for-the-badge&labelColor=6272a4)
 
 Whitelisted domains excluded: 7
 
@@ -79,7 +79,7 @@ Whitelisted domains excluded: 7
 <thead><tr><th>Source List</th><th>Total Domains</th><th>Unique Contribution</th><th>Removal Candidate</th></tr></thead>
 <tbody>
 <tr><td><a href="https://v.firebog.net/hosts/Prigent-Adult.txt">Prigent Adult</a></td><td>4,590,338</td><td>4,431,199</td><td>No</td></tr>
-<tr><td><a href="https://nsfw.oisd.nl">OISD NSFW</a></td><td>496,916</td><td>311,946</td><td>No</td></tr>
+<tr><td><a href="https://nsfw.oisd.nl">OISD NSFW</a></td><td>497,102</td><td>312,116</td><td>No</td></tr>
 <tr><td><a href="https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/nsfw.txt">HaGeZi NSFW</a></td><td>85,930</td><td>11,698</td><td>No</td></tr>
 </tbody>
 <!-- markdownlint-enable MD013 -->
