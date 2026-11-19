@@ -1,0 +1,17 @@
+! YAHA Whitelist
+! Domains listed here are excluded from analytics counts.
+!
+! Format:
+!   @@||domain.com^   - excludes domain.com and all subdomains (ABP exception rule)
+!   domain.com        - excludes exact domain only
+!   *.domain.com      - excludes domain.com and all subdomains
+
+! Aurora Store - Open source alternative app store
+@@||aurorastore.org^
+@@||auroraoss.com^
+
+! gofile.io - File sharing service
+@@||gofile.io^
+
+! Public family site
+@@||thedraper.family^
