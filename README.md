@@ -1,37 +1,52 @@
+<div align="center">
+
 # Host Judge
 
-Host-list relevance monitor and whitelist workspace. Host Judge measures how
-many domains each configured source uniquely contributes and identifies sources
-that may no longer justify their inclusion.
+[![Analyze Host Lists](https://github.com/scottdraper8/host-judge/actions/workflows/analyze-host-lists.yml/badge.svg?branch=main)](https://github.com/scottdraper8/host-judge/actions/workflows/analyze-host-lists.yml)
+
+---
+
+Host-list relevance monitor and whitelist workspace. Tracks configured sources
+for staleness, unique contribution, and removal-candidate analysis.
+
+---
+
+</div>
+
+## Purpose
+
+Host Judge polls the configured host lists weekly and publishes analytics to this
+README. It measures how many domains each source uniquely contributes and flags
+sources as removal candidates when they contribute 1,000 or fewer unique domains
+or show no observed content change for 30 days.
 
 The repository-level [`whitelist.txt`](whitelist.txt) is applied before domain
-counts and contribution statistics are calculated. The analyzer does not
-generate or publish a combined host list.
+counts and contribution statistics are calculated, so the report reflects the
+effective policy used for maintained devices.
 
-## Policy
+## How It Works
 
-A source is a removal candidate when either condition is true:
-
-- it contributes 1,000 or fewer unique domains to its relevant aggregate; or
-- its downloaded content has not changed for at least 30 days.
-
-Sources are never removed automatically. General-list contribution is measured
-against the general aggregate; NSFW-list contribution is measured against the
-full aggregate.
+Runs automatically once a week through GitHub Actions. Sources are fetched with
+bounded concurrency, normalized, filtered through the whitelist, and externally
+merged for deduplication and provenance analysis. The workflow updates only the
+README and analysis state through a pull request; it does not generate or
+publish a combined host list.
 
 <!-- STATS_START -->
 
-## Latest run
+## Latest Run
 
-Last updated: 2026-11-19T23:17:06.149798223Z
+<div align="center">
 
-- General domains: 5,434,166
-- Total domains including NSFW: 10,369,238
-- Whitelisted domains excluded: 7
+![General Domains](https://img.shields.io/badge/General_Domains-5,434,166-8be9fd?style=for-the-badge&labelColor=6272a4)
+![Total Domains](https://img.shields.io/badge/Total_Domains_(with_NSFW)-10,369,238-ff79c6?style=for-the-badge&labelColor=6272a4)
+![Last Updated](https://img.shields.io/badge/Last_Updated-2026--11--19_23:21:52_UTC-50fa7b?style=for-the-badge&labelColor=6272a4)
 
-### General host lists
+Whitelisted domains excluded: 7
 
-<table>
+### General Host Lists
+
+<table align="center">
 <!-- markdownlint-disable MD013 -->
 <thead><tr><th>Source List</th><th>Total Domains</th><th>Unique Contribution</th><th>Removal Candidate</th></tr></thead>
 <tbody>
@@ -57,9 +72,9 @@ Last updated: 2026-11-19T23:17:06.149798223Z
 <!-- markdownlint-enable MD013 -->
 </table>
 
-### NSFW host lists
+### NSFW Host Lists
 
-<table>
+<table align="center">
 <!-- markdownlint-disable MD013 -->
 <thead><tr><th>Source List</th><th>Total Domains</th><th>Unique Contribution</th><th>Removal Candidate</th></tr></thead>
 <tbody>
@@ -70,6 +85,8 @@ Last updated: 2026-11-19T23:17:06.149798223Z
 <!-- markdownlint-enable MD013 -->
 </table>
 
+</div>
+
 > [!NOTE]
 > **Unique Contribution** is the number of domains that would disappear if a
 > source were removed. A source is a **Removal Candidate** when it contributes
@@ -78,33 +95,92 @@ Last updated: 2026-11-19T23:17:06.149798223Z
 
 <!-- STATS_END -->
 
-## Local use
+---
 
-Install the pinned Rust toolchain and run:
+## Local Development Setup
+
+### Prerequisites
+
+- Rust `1.98.1` through [rustup](https://rustup.rs/)
+- [pre-commit `4.6.2`](https://pre-commit.com/)
+
+### Clone and setup
 
 ```bash
+git clone git@github.com:scottdraper8/host-judge.git
+cd host-judge
+pre-commit install --install-hooks
+cargo build --release --locked
+```
+
+### Run locally
+
+```bash
+# Analyze only when content or freshness state requires it
+cargo run --release --locked
+
+# Force a complete analysis
 cargo run --release --locked -- --force
 ```
 
 The analyzer retrieves at most five sources concurrently, rejects non-public
 destinations and unsafe redirects, bounds input sizes, and uses an external
-merge so large lists do not need to fit in memory. It replaces `README.md` and
-`state.json` only after every source has been fetched and analyzed successfully.
+merge so large lists do not need to fit in memory. It updates generated files
+only after every source has been fetched and analyzed successfully.
 
-Install the repository hooks with:
+### Project structure
 
-```bash
-python -m pip install pre-commit==4.6.2
-pre-commit install --install-hooks
+```text
+host-judge/
+├── src/
+│   ├── main.rs      # CLI orchestration and publication gate
+│   ├── config.rs    # Source, URL, and whitelist validation
+│   ├── domain.rs    # Host and filter-format normalization
+│   ├── fetch.rs     # Bounded, DNS-pinned HTTPS retrieval
+│   ├── pipeline.rs  # External sorting and contribution analysis
+│   ├── report.rs    # README report generation
+│   └── state.rs     # Freshness and analysis state
+├── blocklists.json  # Source configuration
+├── whitelist.txt    # Domains excluded from analysis
+├── state.json       # Published freshness and analysis state
+├── Cargo.toml       # Exact direct dependency pins
+└── Cargo.lock       # Reproducible transitive dependency lock
 ```
 
-The hooks enforce formatting, linting, immutable dependency references, secret
-scanning, and contribution-metadata policy. Hosted analysis runs weekly and
-proposes generated report changes through a pull request.
+### Development workflow
+
+```bash
+cargo fmt --all -- --check
+cargo clippy --all-targets --all-features --locked -- -D warnings
+cargo build --release --locked
+pre-commit run --all-files
+```
+
+The hosted security gate audits the complete lockfile with RustSec. Dependabot
+opens pull requests only for security updates; routine package-update pull
+requests are disabled.
 
 ## Configuration
 
-Sources are declared in [`blocklists.json`](blocklists.json). Each entry requires
-`name` and a public HTTPS `url`; it may also set `nsfw` and maintainer metadata.
-Exact domains or `*.example.com` suffixes in [`whitelist.txt`](whitelist.txt) are
-excluded from all counts.
+Blocklists are configured in [`blocklists.json`](blocklists.json). Each entry
+requires a `name` and public HTTPS `url`; optional fields are `nsfw`,
+`maintainer_name`, `maintainer_url`, and `maintainer_description`.
+
+The [`whitelist.txt`](whitelist.txt) file accepts exact domains and
+`*.example.com` suffix rules. Whitelisted domains are excluded from source,
+aggregate, and contribution counts.
+
+## Security Design
+
+- Source and redirect URLs must use public HTTPS destinations.
+- Every resolved address is validated and pinned before connection.
+- Redirects, retries, response sizes, line lengths, and parsed domains are
+  bounded.
+- Analysis runs with read-only credentials; a separate constrained job may
+  publish only `README.md` and `state.json` through a pull request.
+- Workflows use least-privilege permissions, immutable action references, and
+  Harden Runner.
+
+## License
+
+[MIT](LICENSE)

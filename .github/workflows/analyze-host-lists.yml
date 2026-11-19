@@ -64,14 +64,16 @@ jobs:
       - name: Summarize analysis
         if: always()
         run: |
-          echo "## Host Judge Analysis" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Metric | Value |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|---|---:|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Configured sources | $(jq 'length' blocklists.json) |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Completed analyses | $(jq -r '.analysis_count' state.json) |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Removal candidates | $(jq '[.sources[].metadata.removal_candidate | select(. == true)] | length' state.json) |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Last analysis | $(jq -r '.last_analysis' state.json) |" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## Host Judge Analysis"
+            echo ""
+            echo "| Metric | Value |"
+            echo "|---|---:|"
+            echo "| Configured sources | $(jq 'length' blocklists.json) |"
+            echo "| Completed analyses | $(jq -r '.analysis_count' state.json) |"
+            echo "| Removal candidates | $(jq '[.sources[].metadata.removal_candidate | select(. == true)] | length' state.json) |"
+            echo "| Last analysis | $(jq -r '.last_analysis' state.json) |"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   publish:
     name: Publish through a pull request
