@@ -153,13 +153,36 @@ jobs:
               --body "Automated weekly host-list analytics and state update."
           fi
           echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
-      - name: Start required checks
+      - name: Start required pull request checks
         if: steps.update.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ steps.update.outputs.head_sha }}
+          REPOSITORY: ${{ github.repository }}
         run: |
-          gh workflow run ci.yml --ref automation/host-list-analysis
-          gh workflow run security.yml --ref automation/host-list-analysis
-          gh workflow run codeql.yml --ref automation/host-list-analysis
-          gh workflow run contribution-policy.yml --ref automation/host-list-analysis
+          for workflow in ci.yml security.yml codeql.yml contribution-policy.yml; do
+            found=false
+            for _ in $(seq 1 15); do
+              run_data=$(gh api \
+                "repos/$REPOSITORY/actions/workflows/$workflow/runs?branch=automation%2Fhost-list-analysis&event=pull_request&per_page=20" \
+                --jq ".workflow_runs[] | select(.head_sha == \"$HEAD_SHA\") | [.id, .status, (.conclusion // \"\")] | @tsv" \
+                | head -n 1)
+              if [ -n "$run_data" ]; then
+                IFS=$'\t' read -r run_id run_status run_conclusion <<< "$run_data"
+                if [ "$run_conclusion" = "action_required" ]; then
+                  gh run rerun "$run_id" --repo "$REPOSITORY"
+                else
+                  echo "$workflow pull-request run is $run_status"
+                fi
+                found=true
+                break
+              fi
+              sleep 2
+            done
+            if [ "$found" != true ]; then
+              echo "No pull-request run appeared for $workflow at $HEAD_SHA" >&2
+              exit 1
+            fi
+          done
