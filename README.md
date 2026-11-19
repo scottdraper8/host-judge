@@ -149,16 +149,17 @@ host-judge/
 
 ### Development workflow
 
+Local hooks own file normalization, secret detection, unused-dependency checks,
+and local branch and commit metadata:
+
 ```bash
-cargo fmt --all -- --check
-cargo clippy --all-targets --all-features --locked -- -D warnings
-cargo build --release --locked
 pre-commit run --all-files
 ```
 
-The hosted security gate audits the complete lockfile with RustSec. Dependabot
-opens pull requests only for security updates; routine package-update pull
-requests are disabled.
+Hosted CI separately owns workflow validation, dependency policy, Rust
+formatting, Clippy, and the optimized build. The security gate audits the
+complete lockfile with RustSec. Dependabot opens pull requests only for security
+updates; routine package-update pull requests are disabled.
 
 ## Configuration
 
