@@ -2,14 +2,9 @@
 
 # Host Judge
 
-[![Analyze Host Lists](https://github.com/scottdraper8/host-judge/actions/workflows/analyze-host-lists.yml/badge.svg?branch=main)](https://github.com/scottdraper8/host-judge/actions/workflows/analyze-host-lists.yml)
-
----
-
-Host-list relevance monitor and whitelist workspace. Tracks configured sources
-for staleness, unique contribution, and removal-candidate analysis.
-
----
+<strong><em>Host-list relevance monitor and whitelist workspace.<br>
+Tracks configured sources for staleness, unique contribution, and
+removal-candidate analysis.</em></strong>
 
 </div>
 
@@ -38,11 +33,8 @@ publish a combined host list.
 
 <div align="center">
 
-![General Domains](https://img.shields.io/badge/General_Domains-5,434,166-8be9fd?style=for-the-badge&labelColor=6272a4)
-![Total Domains](https://img.shields.io/badge/Total_Domains_(with_NSFW)-10,369,408-ff79c6?style=for-the-badge&labelColor=6272a4)
+![Total Domains](https://img.shields.io/badge/Total_Domains-10,369,408-ff79c6?style=for-the-badge&labelColor=6272a4)
 ![Last Updated](https://img.shields.io/badge/Last_Updated-2026--11--19_23:43:04_UTC-50fa7b?style=for-the-badge&labelColor=6272a4)
-
-Whitelisted domains excluded: 7
 
 ### General Host Lists
 
@@ -94,94 +86,3 @@ Whitelisted domains excluded: 7
 > Sources are never removed automatically.
 
 <!-- STATS_END -->
-
----
-
-## Local Development Setup
-
-### Prerequisites
-
-- Rust `1.98.1` through [rustup](https://rustup.rs/)
-- [pre-commit `4.6.2`](https://pre-commit.com/)
-
-### Clone and setup
-
-```bash
-git clone git@github.com:scottdraper8/host-judge.git
-cd host-judge
-pre-commit install --install-hooks
-cargo build --release --locked
-```
-
-### Run locally
-
-```bash
-# Analyze only when content or freshness state requires it
-cargo run --release --locked
-
-# Force a complete analysis
-cargo run --release --locked -- --force
-```
-
-The analyzer retrieves at most five sources concurrently, rejects non-public
-destinations and unsafe redirects, bounds input sizes, and uses an external
-merge so large lists do not need to fit in memory. It updates generated files
-only after every source has been fetched and analyzed successfully.
-
-### Project structure
-
-```text
-host-judge/
-├── src/
-│   ├── main.rs      # CLI orchestration and publication gate
-│   ├── config.rs    # Source, URL, and whitelist validation
-│   ├── domain.rs    # Host and filter-format normalization
-│   ├── fetch.rs     # Bounded, DNS-pinned HTTPS retrieval
-│   ├── pipeline.rs  # External sorting and contribution analysis
-│   ├── report.rs    # README report generation
-│   └── state.rs     # Freshness and analysis state
-├── blocklists.json  # Source configuration
-├── whitelist.txt    # Domains excluded from analysis
-├── state.json       # Published freshness and analysis state
-├── Cargo.toml       # Exact direct dependency pins
-└── Cargo.lock       # Reproducible transitive dependency lock
-```
-
-### Development workflow
-
-Local hooks own file normalization, secret detection, unused-dependency checks,
-and local branch and commit metadata:
-
-```bash
-pre-commit run --all-files
-```
-
-Hosted CI separately owns workflow validation, dependency policy, Rust
-formatting, Clippy, and the optimized build. The security gate audits the
-complete lockfile with RustSec. Dependabot opens pull requests only for security
-updates; routine package-update pull requests are disabled.
-
-## Configuration
-
-Blocklists are configured in [`blocklists.json`](blocklists.json). Each entry
-requires a `name` and public HTTPS `url`; optional fields are `nsfw`,
-`maintainer_name`, `maintainer_url`, and `maintainer_description`.
-
-The [`whitelist.txt`](whitelist.txt) file accepts exact domains and
-`*.example.com` suffix rules. Whitelisted domains are excluded from source,
-aggregate, and contribution counts.
-
-## Security Design
-
-- Source and redirect URLs must use public HTTPS destinations.
-- Every resolved address is validated and pinned before connection.
-- Redirects, retries, response sizes, line lengths, and parsed domains are
-  bounded.
-- Analysis runs with read-only credentials; a separate constrained job may
-  publish only `README.md` and `state.json` through a pull request.
-- Workflows use least-privilege permissions, immutable action references, and
-  Harden Runner.
-
-## License
-
-[MIT](LICENSE)

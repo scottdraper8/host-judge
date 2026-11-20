@@ -60,11 +60,9 @@ pub fn update_atomic(
     );
     let timestamp_display = format!("{} UTC", timestamp_seconds.replace('T', " "));
     let timestamp_badge = timestamp_display.replace('-', "--").replace(' ', "_");
-    let general_count = format_number(analysis.general_count);
     let all_count = format_number(analysis.all_count);
     let section = format!(
-        "{START}\n\n## Latest Run\n\n<div align=\"center\">\n\n![General Domains](https://img.shields.io/badge/General_Domains-{general_count}-8be9fd?style=for-the-badge&labelColor=6272a4)\n![Total Domains](https://img.shields.io/badge/Total_Domains_(with_NSFW)-{all_count}-ff79c6?style=for-the-badge&labelColor=6272a4)\n![Last Updated](https://img.shields.io/badge/Last_Updated-{timestamp_badge}-50fa7b?style=for-the-badge&labelColor=6272a4)\n\nWhitelisted domains excluded: {}\n\n### General Host Lists\n\n{}\n\n### NSFW Host Lists\n\n{}\n\n</div>\n\n> [!NOTE]\n> **Unique Contribution** is the number of domains that would disappear if a\n> source were removed. A source is a **Removal Candidate** when it contributes\n> 1,000 or fewer unique domains or has no observed content change for 30 days.\n> Sources are never removed automatically.\n\n{END}",
-        format_number(analysis.whitelisted_count),
+        "{START}\n\n## Latest Run\n\n<div align=\"center\">\n\n![Total Domains](https://img.shields.io/badge/Total_Domains-{all_count}-ff79c6?style=for-the-badge&labelColor=6272a4)\n![Last Updated](https://img.shields.io/badge/Last_Updated-{timestamp_badge}-50fa7b?style=for-the-badge&labelColor=6272a4)\n\n### General Host Lists\n\n{}\n\n### NSFW Host Lists\n\n{}\n\n</div>\n\n> [!NOTE]\n> **Unique Contribution** is the number of domains that would disappear if a\n> source were removed. A source is a **Removal Candidate** when it contributes\n> 1,000 or fewer unique domains or has no observed content change for 30 days.\n> Sources are never removed automatically.\n\n{END}",
         table(sources, analysis, stale, &general, false),
         table(sources, analysis, stale, &nsfw, true),
     );

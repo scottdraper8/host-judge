@@ -91,9 +91,10 @@ async fn run(arguments: Arguments) -> Result<()> {
     )?;
     state::save_atomic(Path::new("state.json"), &analysis_state)?;
     println!(
-        "Analysis complete: {} general domains, {} total domains.",
+        "Analysis complete: {} general domains, {} total domains; {} whitelisted domains excluded.",
         report::format_number(analysis.general_count),
-        report::format_number(analysis.all_count)
+        report::format_number(analysis.all_count),
+        report::format_number(analysis.whitelisted_count)
     );
     Ok(())
 }
