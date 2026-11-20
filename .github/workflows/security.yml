@@ -25,9 +25,24 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
 
+      - name: Determine whether checks are needed
+        id: gate
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          needed=true
+          if [[ "$EVENT_NAME" == pull_request ]] && git show "$BASE_SHA:.github/scripts/checks_needed.py" > "$RUNNER_TEMP/checks_needed.py"; then
+            result=$(python3 "$RUNNER_TEMP/checks_needed.py" "$BASE_SHA" HEAD) || result=true
+            if [[ "$result" == false ]]; then needed=false; fi
+          fi
+          echo "needed=$needed" >> "$GITHUB_OUTPUT"
+
       - name: Audit locked dependencies
+        if: steps.gate.outputs.needed == 'true'
         env:
           CARGO_AUDIT_VERSION: 0.22.2
           CARGO_AUDIT_SHA256: ab28a1bdb54db4d5d8ad5981cf1f959410370b3d28250dbd35f6a44248620e39
